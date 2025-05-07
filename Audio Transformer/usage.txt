@@ -1,0 +1,10 @@
+python Dataset2cycles.py ..\custom_speech_commands params.json -v
+
+python Dataset2cycles.py ..\test_dataset params.json -v
+
+python CustomSpeechCommands_R.py 32 one\\1c84a139_nohash_2.wav 48
+
+python CustomSpeechCommands_R.py 32 nine\\0a2b400e_nohash_3.wav 80
+python CustomSpeechCommands_R.py 64 nine\\0a2b400e_nohash_3.wav 48
+
+python CustomSpeechCommands_R.py 64 three\\0cb74144_nohash_2.wav 48
