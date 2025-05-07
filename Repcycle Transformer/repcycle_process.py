@@ -1,6 +1,7 @@
 import math
 import heapq
 import numpy as np
+import torch
 
 CYCLE_EPSILON = 30 #TODO make it percentage wise 25%
 FFT_SIZE = 1024
@@ -10,7 +11,7 @@ AUDIO_SIZE = 16000
 SEGMENT_LENGTH = 500
 FREQ_WEIGHT = 1
 MID_WEIGHT = 2
-F0_FREQ_RANGE = (50,200)
+F0_FREQ_RANGE = (50,250)
 NOISE_FACTOR = 0.65
 
 N_SEGMENTS = AUDIO_SIZE//SEGMENT_LENGTH
@@ -88,7 +89,7 @@ def rms_over_windows(waveform_arr, window_size=100, silence_threshold = None):
   
   return rms_values, excluded_ranges
 
-def fft_max(waveform_arr : np.array):
+def fft_max(waveform_arr : np.array, lower_bound:float, upper_bound:float):
 
   # Pad with zeros if necessary 
   if(len(waveform_arr) != FFT_SIZE):
@@ -101,8 +102,10 @@ def fft_max(waveform_arr : np.array):
   
     #turn back to np.array
   fft_mag = fft_mag[:FFT_SIZE // 2]
-  max_index = np.argmax(fft_mag)
-  return fft_mag, max_index
+  bounded_fft = fft_mag[lower_bound:upper_bound]
+
+  max_index = np.argmax(bounded_fft)
+  return max_index
 
 def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=0.01):
   last=None 
@@ -243,7 +246,7 @@ def find_repcycle_quick(start_sample, cycles):
   
   return cycles[np.argmin(cycle_data)] #return the cycle closest to the middle of the segment
 
-def process_repcycles(waveform_t, quick:bool=False):
+def process_repcycles(waveform_t, vec_size, quick:bool=False):
   
   waveform_np = waveform_t.t().squeeze(1).numpy()
 
@@ -261,7 +264,7 @@ def process_repcycles(waveform_t, quick:bool=False):
   split_waveform = np.array_split(waveform_np, np.arange(SEGMENT_LENGTH, AUDIO_SIZE, SEGMENT_LENGTH))
   #split_waveform = [waveform_np[i:i+segment_length] for i in range(0, 16000, segment_length)]
 
-  repcycles = []
+  repcycles_t = torch.zeros(N_SEGMENTS, vec_size)
 
   for segment_num, segment_wav in enumerate(split_waveform):
     #segment_wav = split_waveform[SEGMENT_NUM]s
@@ -272,17 +275,13 @@ def process_repcycles(waveform_t, quick:bool=False):
       repcycles.append([])
     # Get the fundamental frequency using the FFT
       continue
-    fft_mag, max_index = fft_max(segment_wav)
 
     # exclude bins outside the F0_FREQ_RANGE
     # get frequency to bin index
-
-    top_bins = klargest_with_indices(fft_mag, 4, (LOW_F0_INDEX,HIGH_F0_INDEX))
-    assert len(top_bins) > 0, f"Failed to find a fundamental frequency in range ({F0_FREQ_RANGE[0]}Hz ,{F0_FREQ_RANGE[1]}Hz]"# for {os.path.join(path_root.split('\\')[-1], filename)})"
-    #top_in_range = list(filter(lambda x, h=LOW_F0, l = HIGH_F0: l <= x[0] <= h, top_bins))[0]
+    max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
 
     # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
-    f0 = AUDIO_SIZE/FFT_SIZE * top_bins[0][0]
+    f0 = AUDIO_SIZE/FFT_SIZE * max_index
 
     #print(f"silence_threshold: {silence_threshold}")
     #print(f"f0: {f0}")
@@ -293,8 +292,10 @@ def process_repcycles(waveform_t, quick:bool=False):
     if not len(cycles) > 0:
       repcycles.append([])
       continue
-    
-    if quick:
+      
+      # NOT IMPLEMETNED YET
+    if quick: 
+      # NOT IMPLEMETNED YET
       # find a representative cycle by looking for the cycle closest to the middle of the segment
       repcycle = find_repcycle_quick(start_sample, cycles)
     else:

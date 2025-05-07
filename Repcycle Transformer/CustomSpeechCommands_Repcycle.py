@@ -15,7 +15,7 @@ import torch.nn.functional as nnF
 
 from collections import defaultdict
 
-from Inference_process import find_zerocrossings, find_cycles_f0, find_repcycle3, fft_max, FFT_SIZE, AUDIO_SIZE
+from repcycle_process import process_repcycles
 
 
 # Install soundfile and ffmpeg-python if not already installed
@@ -102,56 +102,10 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     label = audio_path.parent.name  # Get the label as a string
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
-    waveform = self._crop(waveform) #adust size to 16000 samples
-    waveform_np = waveform.squeeze(0).numpy() # Convert to numpy array for processing
-
-    segment_length = waveform.size(1)//self.n_segments 
     
-    rms_values, _ = rms_over_windows(waveform_np, segment_length) #calculate RMS over time
-    signal_rms = np.max(rms_values)
-    noise_rms = np.mean(rms_values)
-    nsr = noise_rms/ signal_rms # Get Noise-to-Signal Ratio
-
-    # Calculate dynamic silence threshold based on NSR
-    silence_threshold = min(nsr * 0.65, signal_rms*.50)
-
-    #output tensor
-    repcycles_t = torch.zeros(self.n_segments, self.vec_size)
-
-    # Split the waveform into segments. fortunately this also pads the file if it was too short to begin with - serendipity 
-    split_waveform = np.array_split(waveform_np, np.arange(segment_length, AUDIO_SIZE, segment_length))
-
-    for segment_num, segment_wav in enumerate(split_waveform):
-      #segment_wav = split_waveform[SEGMENT_NUM]s
-      start_sample = segment_num*segment_length
-      # Get the Zero-Crossings, ignoring noise
-      zero_crossings = find_zerocrossings(segment_wav, start_sample, silence_threshold)
-      if not len(zero_crossings) > 1:
-      # Get the fundamental frequency using the FFT
-        continue
-
-      max_index = fft_max(segment_wav)
-
-      # exclude bins outside the F0_FREQ_RANGE
-      # get frequency to bin index
-
-      # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
-      f0 = AUDIO_SIZE/FFT_SIZE * max_index
-
-      #find cycles within the signal and find a representative one for the segment
-      cycles = find_cycles_f0(f0, start_sample, zero_crossings)
-      if not len(cycles) > 0:
-        continue
-
-      repcycle = find_repcycle3(segment_wav, start_sample, f0, cycles)
-      assert repcycle != None, f"Error: failed to find a representative cycle for segment [{start_sample}, {start_sample+segment_length}]"
-      repc_start = math.floor(repcycle[0])
-      repc_end = math.floor(repcycle[1])
-      repc_wav = vectorize_f(waveform_np[repc_start:repc_end], self.vec_size)
-      repcycles_t[segment_num] = torch.tensor(repc_wav) 
-      #show_waveform(segment_wav, start_sample, zero_crossings, repcycle)
-      #show_fft(fft_mag, start_sample, 4)
+    repcycles_t = process_repcycles(waveform)
     return repcycles_t, token
+    
   
   def getbyname(self, item_name):
     audio_path = self.base_dir / Path(item_name)

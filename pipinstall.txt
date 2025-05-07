@@ -1,0 +1,22 @@
+for CUDA enabled devices. Check with pytorch website for specific version. For my GPU:
+https://download.pytorch.org/whl/cu126 
+
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu126
+pip install matplotlib numpy
+pip install tqdm ipywidgets==7.7.2
+
+pip install soundfile
+pip install jupyter
+
+
+other:
+python -m ipykernel install --user --name=myenv --display-name "Python (myenv)"
+
+jupyter nbextension enable --py widgetsnbextension
+jupyter nbextension install --py widgetsnbextensionc
+
+pip install gpustat
+python -m ipykernel install --user --name=.venv
+pip install opencv-python opencv-python-headless
+pip install --upgrade jupyter ipywidgets
