@@ -32,7 +32,7 @@ from repcycle_process import process_repcycles
 classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
 class CustomSpeechCommandsDataset_Repcycle(Dataset):
-  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1, control: bool = False):
+  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1):
     
     self.vec_size=vec_size 
     self.n_segments = n_segments
@@ -79,16 +79,16 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
   #  with filepath.open() as fileobj:
   #    return {line for line in fileobj}
 
-  def _load_repc(self, filepath):
-    repcycles = []
-    with filepath.open() as fileobj:
-      for line in fileobj:
-        line = line.strip()
-        if line == '0':
-          repcycles.append(0)
-        else:
-          repcycles.append(tuple(map(float, line.split(','))))
-    return repcycles
+  #def _load_repc(self, filepath):
+  #  repcycles = []
+  #  with filepath.open() as fileobj:
+  #    for line in fileobj:
+  #      line = line.strip()
+  #      if line == '0':
+  #        repcycles.append(0)
+  #      else:
+  #        repcycles.append(tuple(map(float, line.split(','))))
+  #  return repcycles
 
   def __len__(self):
     return len(self.audio_paths)
@@ -103,47 +103,16 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles(waveform)
+    repcycles_t = process_repcycles(waveform, self.vec_size)
     return repcycles_t, token
     
-  
   def getbyname(self, item_name):
     audio_path = self.base_dir / Path(item_name)
-    if self.control:
-      label = audio_path.parent.name  # Get the label as a string
-      token = self.label_dict[label]  # Convert the label to an integer token
-      waveform, _ = torchaudio.load(audio_path)
-      waveform = self._crop(waveform)
-      waveform_np = waveform.squeeze(0).numpy()
-      segment_length = waveform.size(dim=1)//self.n_segments
-      rms_values, _ = rms_over_windows(waveform_np, segment_length) #calculate RMS over time
-
-            # Get Noise-to-Signal Ratio
-      signal_rms = np.max(rms_values)
-      noise_rms = np.mean(rms_values)
-      nsr = noise_rms/ signal_rms
-
-      # Calculate dynamic silence threshold based on NSR
-      silence_threshold = min(nsr * 0.65, signal_rms*.50)
-
-      out = torch.zeros(self.n_segments, self.vec_size)
-      for segment_num in range(self.n_segments):
-        if rms_values[segment_num] < silence_threshold:
-          continue
-        start_sample = segment_num*segment_length
-        repc_wav = vectorize_f(waveform[0, start_sample+segment_length//2-50:start_sample+segment_length//2+50], self.vec_size)
-        out[segment_num] = torch.tensor(repc_wav) 
-      return out, token
-
-    repc_path = self.repc_base_dir / audio_path.parent.stem / audio_path.with_suffix(".txt").name
-    #"..\test_dataset\five\0a9f9af7_nohash_0.txt
-
     label = audio_path.parent.name  # Get the label as a string
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
-    waveform = self._crop(waveform)
-    repcycles = self._load_repc(repc_path)
-    repcycles_t = self._get_repcycles_wav(waveform, repcycles)
+    
+    repcycles_t = process_repcycles(waveform, self.vec_size)
     return repcycles_t, token
 
   def plot_item(self, item_name, out_path=None,):
@@ -184,20 +153,6 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     else:
       waveform = waveform[:, :target_length]
     return waveform
-  
-  def _get_repcycles_wav(self, waveform, repcycles):
-
-    # [0,0,0,0,0,(2025.2, 2125.3),(),(),0,0,0,0,0,0]
-    #2D Array of the repcycles with size of the columns being the max repcycle size
-    out = torch.zeros(len(repcycles), self.vec_size)
-
-    for i, cycle in enumerate(repcycles):
-      if cycle == 0:
-        continue
-      repc_wav = vectorize_f(waveform[0, cycle[0].__floor__():cycle[1].__floor__()], self.vec_size)
-      out[i] = torch.tensor(repc_wav) 
-    
-    return out
   
   def balance_dataset(self):
     # Count the number of samples for each label

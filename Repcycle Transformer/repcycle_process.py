@@ -16,7 +16,6 @@ NOISE_FACTOR = 0.65
 
 N_SEGMENTS = AUDIO_SIZE//SEGMENT_LENGTH
 
-
 LOW_F0_INDEX = math.floor(FFT_SIZE/AUDIO_SIZE * F0_FREQ_RANGE[0])
 HIGH_F0_INDEX = math.floor(FFT_SIZE/AUDIO_SIZE * F0_FREQ_RANGE[1])
 
@@ -105,7 +104,7 @@ def fft_max(waveform_arr : np.array, lower_bound:float, upper_bound:float):
   bounded_fft = fft_mag[lower_bound:upper_bound]
 
   max_index = np.argmax(bounded_fft)
-  return max_index
+  return lower_bound+max_index # account for index shift due to lower_bound
 
 def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=0.01):
   last=None 
@@ -272,14 +271,13 @@ def process_repcycles(waveform_t, vec_size, quick:bool=False):
     # Get the Zero-Crossings, ignoring noise
     zero_crossings = find_zerocrossings(segment_wav, start_sample, silence_threshold)
     if not len(zero_crossings) > 1:
-      repcycles.append([])
-    # Get the fundamental frequency using the FFT
       continue
 
     # exclude bins outside the F0_FREQ_RANGE
     # get frequency to bin index
     max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
 
+    # Get the fundamental frequency using the FFT
     # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
     f0 = AUDIO_SIZE/FFT_SIZE * max_index
 
@@ -290,7 +288,6 @@ def process_repcycles(waveform_t, vec_size, quick:bool=False):
     #find cycles within the signal and find a representative one for the segment
     cycles = find_cycles_f0(f0, start_sample, zero_crossings)
     if not len(cycles) > 0:
-      repcycles.append([])
       continue
       
       # NOT IMPLEMETNED YET
@@ -301,10 +298,13 @@ def process_repcycles(waveform_t, vec_size, quick:bool=False):
     else:
       repcycle = find_repcycle3(segment_wav, start_sample, f0, cycles)
     assert repcycle != None, f"Error: failed to find a representative cycle for segment [{start_sample}, {start_sample+SEGMENT_LENGTH}]" #for {os.path.join(path_root.split('\\')[-1], filename)}"
+    repc_start = math.floor(repcycle[0])
+    repc_end = math.floor(repcycle[1])
+    repc_wav = vectorize_f(waveform_np[repc_start:repc_end], vec_size)
 
-    repcycles.append(repcycle)
+    repcycles_t[segment_num] = torch.tensor(repc_wav)
 
-  return repcycles
+  return repcycles_t
 
 
 
