@@ -58,8 +58,8 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     # Sort or shuffle the list
     if(shuffle):
       random.shuffle(self.audio_paths)
-    else:
-      self.audio_paths = sorted(self.audio_paths, key=lambda x: classes.index(str(x.relative_to(self.base_dir)).split('\\')[0]))
+    #else:
+    #  self.audio_paths = sorted(self.audio_paths, key=lambda x: classes.index(str(x.relative_to(self.base_dir)).split('\\')[0]))
 
     self.label_dict = {label: idx for idx, label in enumerate(classes)} 
     #print(f"Label Dictionary: {self.label_dict}")
