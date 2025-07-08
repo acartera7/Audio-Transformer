@@ -1,10 +1,10 @@
 # Description: This script trains an AST whose input has been modified to take audio insteasd of patches of images 
 # Original code is based off a tutorial by Brian Pulfer
 # https://medium.com/@brianpulfer/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c
-# Andrei Cartera -- Mar 2025
+# Andrei Cartera -- March 2025
 
 import numpy as np
-import CustomSpeechCommands_R as SpeechCommands
+import CustomSpeechCommands_Repcycle as SpeechCommands
 from pathlib import Path
 import torch
 import torch.nn as nn
