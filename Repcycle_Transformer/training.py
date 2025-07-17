@@ -8,7 +8,7 @@ import datetime
 import numpy as np
 import CustomSpeechCommands_Repcycle as SpeechCommands
 from AudioTransformer import AudioTransformer 
-from tqdm.notebook import tqdm, trange
+from tqdm import tqdm, trange
 from pathlib import Path
 import torch
 import torch.nn as nn
@@ -26,7 +26,7 @@ REPC_VEC_SIZE = 64
 EPOCHS = 50
 N_HEADS = 8
 N_ENCODERS = 4
-BATCH_SIZE = 64
+BATCH_SIZE = 1
 HIDDEN_DIM = 32
 DROPOUT = 0.15
 ACTIVATION="gelu"
@@ -53,7 +53,7 @@ if __name__ == "__main__":
   print("Using device: ", device, f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "")
   model = AudioTransformer(N_SEGMENTS, REPC_VEC_SIZE, N_ENCODERS, HIDDEN_DIM, N_HEADS, NUM_CLASSES).to(device)
 
-  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE, divisor=BATCH_SIZE)
+  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE, divisor=BATCH_SIZE)
   
   train_loader = DataLoader(train_set, shuffle=False, batch_size=BATCH_SIZE)
 
