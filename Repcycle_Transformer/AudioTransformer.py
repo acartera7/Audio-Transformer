@@ -12,28 +12,8 @@ from torch.optim import Adam, lr_scheduler
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-np.random.seed(0)
-torch.manual_seed(0)
-
-print(torch.__version__)
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
-
-classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
-NUM_CLASSES = 10
-
 # Hyperparameters
-N_SEGMENTS = 32
-REPC_VEC_SIZE = 80
-
-EPOCHS = 100
-N_HEADS = 8
-N_ENCODERS = 4
-BATCH_SIZE = 64
-HIDDEN_DIM = 32
 DROPOUT = 0.15
-ACTIVATION="gelu"
-LR = 0.0009
 
 def get_positional_embeddings(sequence_length, d):
   result = torch.ones(sequence_length, d)
@@ -61,7 +41,7 @@ class AudioTransformerBlock(nn.Module):
     super(AudioTransformerBlock, self).__init__()
     self.hidden_d = hidden_d
     self.n_heads = n_heads
-
+    
     self.norm1 = nn.LayerNorm(hidden_d)
     self.mhsa = NewMSA(hidden_d, n_heads)  # Updated MSA module
     self.norm2 = nn.LayerNorm(hidden_d)

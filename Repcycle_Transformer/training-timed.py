@@ -37,8 +37,10 @@ MODEL_PATH = f'models/({today})ATmodel_{N_SEGMENTS}SEG_{REPC_VEC_SIZE}VEC_E{EPOC
 
 print(f"Model path: {MODEL_PATH}")
 
+
 np.random.seed(0)
 torch.manual_seed(0)
+
 
 print(torch.__version__)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -52,7 +54,7 @@ if __name__ == "__main__":
 
   train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE, divisor=BATCH_SIZE)
   
-  train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE)
+  train_loader = DataLoader(train_set, shuffle=False, batch_size=BATCH_SIZE)
 
   # Defining model and training options
 
@@ -63,23 +65,49 @@ if __name__ == "__main__":
 
   model.train()  # Set the model to training mode                                     
   for epoch in trange(EPOCHS, desc="Training"):
+    epoch_start = time.time()
     train_loss = 0.0
 
     for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1} in training", leave=False):
+      batch_start = time.time()
+      
+      data_transfer_start = time.time()
       x, y = batch
       x, y = x.to(device), y.to(device)
-      y_hat = model(x)
-      loss = criterion(y_hat, y)
+      data_transfer_end = time.time()
 
+      model_forward_start = time.time()
+      y_hat = model(x)
+      model_forward_end = time.time()
+
+      loss_start = time.time()
+      loss = criterion(y_hat, y)
+      loss_end = time.time()
+
+      backward_start = time.time()
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
+      backward_end = time.time()
 
       train_loss += loss.item() * x.size(0)
-      
-    train_loss /= len(train_loader.dataset) 
+      batch_end = time.time()
+
+      # Optional: Log per batch
+      print(f"[Batch Time] \n"
+            f"data: {data_transfer_end - data_transfer_start:.4f}s \n "
+            f"forward: {model_forward_end - model_forward_start:.4f}s \n "
+            f"loss: {loss_end - loss_start:.4f}s \n "
+            f"backward: {backward_end - backward_start:.4f}s \n"
+            f"total: {batch_end - batch_start:.4f}s \n")
+
+    train_loss /= len(train_loader.dataset)
     scheduler.step(train_loss)
     torch.cuda.empty_cache()
+
+    epoch_end = time.time()
+    print(f"Epoch {epoch+1}/{EPOCHS} loss: {train_loss:.2f}, LR: {optimizer.param_groups[0]['lr']:.6f}, "
+          f"Epoch Duration: {epoch_end - epoch_start:.2f}s")
     
     current_lr = optimizer.param_groups[0]['lr']
     print(f"Epoch {epoch+1}/{EPOCHS} loss: {train_loss:.2f}, LR: {current_lr}")

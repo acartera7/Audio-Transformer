@@ -105,6 +105,7 @@ class CustomSpeechCommandsDataset_Control(Dataset):
       if rms_values[segment_num] < silence_threshold:
         continue
       start_sample = segment_num*segment_length
+      # Extract a arbitrary "cycle" of 100 samples from the middle of the segment
       repc_wav = vectorize_f(waveform[0, start_sample+segment_length//2-50:start_sample+segment_length//2+50], self.vec_size)
       out[segment_num] = torch.tensor(repc_wav) 
     return out, token

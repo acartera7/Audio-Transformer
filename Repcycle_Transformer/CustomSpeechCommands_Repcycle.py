@@ -32,7 +32,7 @@ from repcycle_process import process_repcycles
 classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
 class CustomSpeechCommandsDataset_Repcycle(Dataset):
-  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1):
+  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1, quick: bool = False):
     
     self.vec_size=vec_size 
     self.n_segments = n_segments
@@ -103,7 +103,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles(waveform, self.vec_size)
+    repcycles_t = process_repcycles(waveform, self.vec_size, quick=self.quick)
     return repcycles_t, token
     
   def getbyname(self, item_name):
