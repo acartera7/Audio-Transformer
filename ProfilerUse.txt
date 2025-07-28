@@ -1,0 +1,28 @@
+tensorboard --logdir=./profiler
+
+How It Works
+wait=1, warmup=1, active=3: These control which iterations are profiled. It waits 1 batch, warms up for 1, then profiles 3.
+
+tensorboard_trace_handler("./profiler"): Outputs trace data viewable in TensorBoard. Just run tensorboard --logdir=./profiler in terminal.
+
+record_shapes=True: Tracks input/output tensor shapes.
+
+profile_memory=True: Logs memory usage—important for CUDA investigations.
+
+with_stack=True: Includes Python stack traces.
+
+with_flops=True: Estimates floating point operation usage (great for understanding compute cost).
+
+===============================================
+🧪 What schedule Does
+The schedule= parameter defines:
+
+when to start profiling (wait)
+
+how long to warm up (warmup)
+
+how long to actively record (active)
+
+how many times to repeat the cycle (repeat)
+
+This is useful when running long training loops and you want to avoid capturing every iteration (to reduce overhead or focus on specific phases).

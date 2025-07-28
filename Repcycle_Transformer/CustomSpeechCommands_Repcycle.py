@@ -34,7 +34,8 @@ classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight
 class CustomSpeechCommandsDataset_Repcycle(Dataset):
   def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1, quick: bool = False):
     
-    self.vec_size=vec_size 
+    self.vec_size=vec_size
+    self.quick = quick
     self.n_segments = n_segments
     self.base_dir = Path(base_dir)
     self.subset = subset
