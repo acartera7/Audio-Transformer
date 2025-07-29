@@ -50,9 +50,9 @@ if __name__ == "__main__":
   print("Using device: ", device, f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "")
   model = AudioTransformer(N_SEGMENTS, REPC_VEC_SIZE, N_ENCODERS, HIDDEN_DIM, N_HEADS, NUM_CLASSES).to(device)
 
-  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE, divisor=BATCH_SIZE)
+  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE)
   
-  train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE)
+  train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE, num_workers=10, pin_memory=True, persistent_workers=True, drop_last=True)
 
   # Defining model and training options
 

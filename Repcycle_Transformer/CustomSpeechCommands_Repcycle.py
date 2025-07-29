@@ -32,7 +32,7 @@ from repcycle_process import process_repcycles
 classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
 class CustomSpeechCommandsDataset_Repcycle(Dataset):
-  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, divisor: int = 1, quick: bool = False):
+  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, quick: bool = False):
     
     self.vec_size=vec_size
     self.quick = quick
@@ -52,6 +52,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
       if subset == "testing":
         self.audio_paths = [p for p in self.all_audio_paths if p not in self.validation_files and p in self.testing_files]
       else:
+        
         self.audio_paths = [p for p in self.all_audio_paths if p not in self.testing_files]
     else:
       self.audio_paths = self.all_audio_paths
@@ -66,8 +67,8 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     #print(f"Label Dictionary: {self.label_dict}")
 
     # Balance the dataset 
-    self.divisor = divisor
-    self.balance_dataset()
+    #self.divisor = divisor
+    #self.balance_dataset()
     
   def _load_list(self, filename):
     filepath = self.base_dir / filename

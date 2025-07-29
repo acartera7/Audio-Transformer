@@ -26,7 +26,7 @@ REPC_VEC_SIZE = 64
 EPOCHS = 30
 N_HEADS = 8
 N_ENCODERS = 4
-BATCH_SIZE = 50
+BATCH_SIZE = 64
 HIDDEN_DIM = 32
 ACTIVATION="gelu"
 LR = 0.0009
@@ -41,7 +41,6 @@ print(f"Model path: {MODEL_PATH}")
 np.random.seed(0)
 torch.manual_seed(0)
 
-
 print(torch.__version__)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -52,9 +51,9 @@ if __name__ == "__main__":
   print("Using device: ", device, f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "")
   model = AudioTransformer(N_SEGMENTS, REPC_VEC_SIZE, N_ENCODERS, HIDDEN_DIM, N_HEADS, NUM_CLASSES).to(device)
 
-  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE, divisor=BATCH_SIZE)
-  
-  train_loader = DataLoader(train_set, shuffle=False, batch_size=BATCH_SIZE)
+  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE)
+
+  train_loader = DataLoader(train_set, shuffle=False, batch_size=BATCH_SIZE, pin_memory=True)
 
   # Defining model and training options
 
@@ -68,9 +67,15 @@ if __name__ == "__main__":
     epoch_start = time.time()
     train_loss = 0.0
 
-    for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1} in training", leave=False):
+    train_iter = iter(train_loader)
+
+    for batch_idx in tqdm(range(len(train_loader)), desc=f"Epoch {epoch + 1} in training", leave=False):
       batch_start = time.time()
       
+      dataloader_start = time.time()
+      batch = next(train_iter)
+      dataloader_end = time.time()
+
       data_transfer_start = time.time()
       x, y = batch
       x, y = x.to(device), y.to(device)
@@ -94,15 +99,16 @@ if __name__ == "__main__":
       batch_end = time.time()
 
       # Optional: Log per batch
-      print(f"[Batch Time] \n"
-            f"data: {data_transfer_end - data_transfer_start:.4f}s \n "
-            f"forward: {model_forward_end - model_forward_start:.4f}s \n "
-            f"loss: {loss_end - loss_start:.4f}s \n "
-            f"backward: {backward_end - backward_start:.4f}s \n"
-            f"total: {batch_end - batch_start:.4f}s \n")
+      print(f"[Batch Time] Batch: {batch_idx} \n"
+            f"DataLoader time: {dataloader_end - dataloader_start:.4f}s \n"
+            f"Data Transfer: {data_transfer_end - data_transfer_start:.4f}s \n "
+            f"Forward: {model_forward_end - model_forward_start:.4f}s \n "
+            f"Loss: {loss_end - loss_start:.4f}s \n "
+            f"Backward: {backward_end - backward_start:.4f}s \n"
+            f"Total: {batch_end - batch_start:.4f}s \n")
 
     train_loss /= len(train_loader.dataset)
-    scheduler.step(train_loss)
+    scheduler.step()
     torch.cuda.empty_cache()
 
     epoch_end = time.time()
