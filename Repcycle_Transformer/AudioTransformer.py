@@ -4,13 +4,9 @@
 # Andrei Cartera -- Mar 2025
 
 import numpy as np
-import CustomSpeechCommands_Repcycle as SpeechCommands
-from pathlib import Path
 import torch
 import torch.nn as nn
-from torch.optim import Adam, lr_scheduler
-from torch.nn import CrossEntropyLoss
-from torch.utils.data import DataLoader
+
 
 # Hyperparameters
 DROPOUT = 0.15

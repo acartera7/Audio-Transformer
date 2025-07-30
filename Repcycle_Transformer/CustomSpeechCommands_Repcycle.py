@@ -52,7 +52,6 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
       if subset == "testing":
         self.audio_paths = [p for p in self.all_audio_paths if p not in self.validation_files and p in self.testing_files]
       else:
-        
         self.audio_paths = [p for p in self.all_audio_paths if p not in self.testing_files]
     else:
       self.audio_paths = self.all_audio_paths
