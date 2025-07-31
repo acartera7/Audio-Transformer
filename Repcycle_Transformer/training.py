@@ -23,17 +23,17 @@ NUM_CLASSES = 10
 N_SEGMENTS = 32
 REPC_VEC_SIZE = 64
 
-EPOCHS = 30
+EPOCHS = 1
 N_HEADS = 8
 N_ENCODERS = 4
-BATCH_SIZE = 50
+BATCH_SIZE = 10
 HIDDEN_DIM = 32
 ACTIVATION="gelu"
 LR = 0.0009
 
 today = datetime.date.today()
 
-MODEL_PATH = f'models/({today})ATmodel_{N_SEGMENTS}SEG_{REPC_VEC_SIZE}VEC_E{EPOCHS}_{N_HEADS}_{N_ENCODERS}_B{BATCH_SIZE}_H{HIDDEN_DIM}.pth'
+MODEL_PATH = f'models/DELETEME({today})ATmodel_{N_SEGMENTS}SEG_{REPC_VEC_SIZE}VEC_E{EPOCHS}_{N_HEADS}_{N_ENCODERS}_B{BATCH_SIZE}_H{HIDDEN_DIM}.pth'
 
 print(f"Model path: {MODEL_PATH}")
 
@@ -50,10 +50,10 @@ if __name__ == "__main__":
   print("Using device: ", device, f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "")
   model = AudioTransformer(N_SEGMENTS, REPC_VEC_SIZE, N_ENCODERS, HIDDEN_DIM, N_HEADS, NUM_CLASSES).to(device)
 
-  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/custom_speech_commands", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE)
+  train_set = SpeechCommands.CustomSpeechCommandsDataset_Repcycle("../datasets/mini", n_segments=N_SEGMENTS, shuffle=False, vec_size=REPC_VEC_SIZE)
   
-  train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE, num_workers=10, pin_memory=True, persistent_workers=True, drop_last=True)
-
+  #train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE, num_workers=10, pin_memory=True, persistent_workers=True, drop_last=True)
+  train_loader = DataLoader(train_set, shuffle=True, batch_size=BATCH_SIZE)
   # Defining model and training options
 
   # Training loop
@@ -78,7 +78,7 @@ if __name__ == "__main__":
       train_loss += loss.item() * x.size(0)
       
     train_loss /= len(train_loader.dataset) 
-    scheduler.step(train_loss)
+    scheduler.step()
     torch.cuda.empty_cache()
     
     current_lr = optimizer.param_groups[0]['lr']

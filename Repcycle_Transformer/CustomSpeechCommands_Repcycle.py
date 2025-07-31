@@ -1,13 +1,11 @@
 # Python Object that loads a dataset of wav files and their representative cycles for use in training a Neural Network 
 # Andrei Cartera 
 import random
-import math
 import os, sys
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-import torch
 import torchaudio 
 
 from torch.utils.data import Dataset
@@ -32,10 +30,9 @@ from repcycle_process import process_repcycles
 classes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
 class CustomSpeechCommandsDataset_Repcycle(Dataset):
-  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40, quick: bool = False):
+  def __init__(self, base_dir: str, subset: str = None, n_segments=32, shuffle: bool = False, vec_size=40):
     
     self.vec_size=vec_size
-    self.quick = quick
     self.n_segments = n_segments
     self.base_dir = Path(base_dir)
     self.subset = subset
@@ -104,7 +101,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles(waveform, self.vec_size, quick=self.quick)
+    repcycles_t = process_repcycles(waveform, self.vec_size)
     return repcycles_t, token
     
   def getbyname(self, item_name):
