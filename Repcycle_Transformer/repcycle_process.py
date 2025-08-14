@@ -106,28 +106,40 @@ def fft_max(waveform_arr : np.array, lower_bound:float, upper_bound:float):
   max_index = np.argmax(bounded_fft)
   return lower_bound+max_index # account for index shift due to lower_bound
 
-def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=0.01):
+def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=None):
   last=None 
   zerocrossings = np.array([], dtype='f')
   
   #Filter out quiet parts of the signal using a RMS with windowing
-  _, excluded_ranges = rms_over_windows(waveform_arr, SEGMENT_LENGTH//5, dynamic_threshold)
+  waveform_arr_mod = waveform_arr.copy()
+  if dynamic_threshold is not None:
+    _, excluded_ranges = rms_over_windows(waveform_arr, SEGMENT_LENGTH//5, dynamic_threshold)
 
+  #  # mark excluded ranges using NaN
+    for start, end in excluded_ranges:
+      waveform_arr_mod[start:end] = np.nan
   # turn the excluded ranges into an array of samples that shouldn't be processed
-  excluded_samples = [] 
-  for start, end in excluded_ranges:
-    excluded_samples.extend(range(start_sample + start, start_sample + end))
+  # excluded_samples = [] 
+  # for start, end in excluded_ranges:
+  #   excluded_samples.extend(range(start_sample + start, start_sample + end))
 
   #sweep the whole segment
   for index, value in enumerate(waveform_arr):
-    absolute_index = start_sample + index
-    if absolute_index in excluded_samples:
+    #if absolute_index in excluded_samples:
+    if waveform_arr_mod[index] is np.nan:
+      last = None
+
+      # FIND A WAY TO SKIP TO THE NEXT PORTION THAT ISN'T NAN
+
+
       continue 
     if last == None:  #record last sample
       last = value
     #elif value == 0:
     #  if np.sign(last) == -1.0 and np.sign(waveform_arr[index+1]) == 1.0:
     #    np.append(zerocrossings, start_sample+index)
+
+      #Filter out quiet parts of the signal using a RMS with windowing
     
     # if last sample is negative and current one is positive a zero crossing occured
     if np.sign(last) == -1.0 and np.sign(value) == 1.0: 
@@ -245,6 +257,18 @@ def find_repcycle_quick(start_sample, cycles):
   
   return cycles[np.argmin(cycle_data)] #return the cycle closest to the middle of the segment
 
+#=======================================================================================================================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#=======================================================================================================================
+# ORIGINAL
+# extract repcycles from audio by brute-force parsing for a positive zero-crossings and a scoring system
+# score the cycles based an obvious shape at the beginning of the cycle
+# score the cycles based on they adherence to the following biases:
+# 1. obvious shape at the beginning of the cycle
+# 2. closeness to f0
+# 3. loudness
+# 4. most in the middle
+  
 def process_repcycles(waveform_t, vec_size, quick:bool=False):
   
   waveform_np = waveform_t.t().squeeze(1).numpy()
@@ -306,5 +330,130 @@ def process_repcycles(waveform_t, vec_size, quick:bool=False):
 
   return repcycles_t
 
+#=======================================================================================================================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#=======================================================================================================================
+# extracting repcycles from audio using the simplest method:
+# 1) jump in the middle of the file 
+# 2) Find zero crossings going left and jump by F0 to next zero crossing
+# uses FFT to guess fundamental frequency
+# uses all segments regardless of volume level
+
+# def process_repcycles_FAST_FFT_USEALL(waveform_t, vec_size, quick:bool=False):
+  
+#   waveform_np = waveform_t.t().squeeze(1).numpy()
+
+#   # Split the waveform into segments
+#   split_waveform = np.array_split(waveform_np, np.arange(SEGMENT_LENGTH, AUDIO_SIZE, SEGMENT_LENGTH))
+#   #split_waveform = [waveform_np[i:i+segment_length] for i in range(0, 16000, segment_length)]
+
+#   repcycles_t = torch.zeros(N_SEGMENTS, vec_size)
+
+#   for segment_num, segment_wav in enumerate(split_waveform):
+#     #segment_wav = split_waveform[SEGMENT_NUM]s
+#     start_sample = segment_num*SEGMENT_LENGTH
+#     # Get the Zero-Crossings, ignoring noise
+#     zero_crossings = find_zerocrossings(segment_wav, start_sample, silence_threshold)
+#     if not len(zero_crossings) > 1:
+#       continue
+
+#     # exclude bins outside the F0_FREQ_RANGE
+#     # get frequency to bin index
+#     max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+
+#     # Get the fundamental frequency using the FFT
+#     # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
+#     f0 = AUDIO_SIZE/FFT_SIZE * max_index
+
+#     #print(f"silence_threshold: {silence_threshold}")
+#     #print(f"f0: {f0}")
+#     #print(f"F0 magnitude{fft_mag[max_index]}")
+
+#     #find cycles within the signal and find a representative one for the segment
+#     cycles = find_cycles_f0(f0, start_sample, zero_crossings)
+#     if not len(cycles) > 0:
+#       continue
+      
+#       # NOT IMPLEMETNED YET
+#     if quick: 
+#       # NOT IMPLEMETNED YET
+#       # find a representative cycle by looking for the cycle closest to the middle of the segment
+#       repcycle = find_repcycle_quick(start_sample, cycles)
+#     else:
+#       repcycle = find_repcycle3(segment_wav, start_sample, f0, cycles)
+#     assert repcycle != None, f"Error: failed to find a representative cycle for segment [{start_sample}, {start_sample+SEGMENT_LENGTH}]" #for {os.path.join(path_root.split('\\')[-1], filename)}"
+#     repc_start = math.floor(repcycle[0])
+#     repc_end = math.floor(repcycle[1])
+#     repc_wav = vectorize_f(waveform_np[repc_start:repc_end], vec_size)
+
+#     repcycles_t[segment_num] = torch.tensor(repc_wav)
+
+#   return repcycles_t
+
+
+#=======================================================================================================================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#=======================================================================================================================
+# extract
+# def process_repcycles_FAST_DENOISED(waveform_t, vec_size, quick:bool=False):
+  
+#   waveform_np = waveform_t.t().squeeze(1).numpy()
+
+#   #identify SNR reciprocal to get a dynamic noise threshold for filtering 
+#   rms_values, _ = rms_over_windows(waveform_np, SEGMENT_LENGTH) #calculate RMS over time
+  
+#   # Get Noise-to-Signal Ratio
+#   signal_rms = np.max(rms_values)
+#   noise_rms = np.mean(rms_values) * NOISE_FACTOR
+
+#   # Calculate dynamic silence threshold based on NSR
+#   silence_threshold = min(noise_rms, signal_rms*.50)
+
+#   # Split the waveform into segments
+#   split_waveform = np.array_split(waveform_np, np.arange(SEGMENT_LENGTH, AUDIO_SIZE, SEGMENT_LENGTH))
+#   #split_waveform = [waveform_np[i:i+segment_length] for i in range(0, 16000, segment_length)]
+
+#   repcycles_t = torch.zeros(N_SEGMENTS, vec_size)
+
+#   for segment_num, segment_wav in enumerate(split_waveform):
+#     #segment_wav = split_waveform[SEGMENT_NUM]s
+#     start_sample = segment_num*SEGMENT_LENGTH
+#     # Get the Zero-Crossings, ignoring noise
+#     zero_crossings = find_zerocrossings(segment_wav, start_sample, silence_threshold)
+#     if not len(zero_crossings) > 1:
+#       continue
+
+#     # exclude bins outside the F0_FREQ_RANGE
+#     # get frequency to bin index
+#     max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+
+#     # Get the fundamental frequency using the FFT
+#     # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
+#     f0 = AUDIO_SIZE/FFT_SIZE * max_index
+
+#     #print(f"silence_threshold: {silence_threshold}")
+#     #print(f"f0: {f0}")
+#     #print(f"F0 magnitude{fft_mag[max_index]}")
+
+#     #find cycles within the signal and find a representative one for the segment
+#     cycles = find_cycles_f0(f0, start_sample, zero_crossings)
+#     if not len(cycles) > 0:
+#       continue
+      
+#       # NOT IMPLEMETNED YET
+#     if quick: 
+#       # NOT IMPLEMETNED YET
+#       # find a representative cycle by looking for the cycle closest to the middle of the segment
+#       repcycle = find_repcycle_quick(start_sample, cycles)
+#     else:
+#       repcycle = find_repcycle3(segment_wav, start_sample, f0, cycles)
+#     assert repcycle != None, f"Error: failed to find a representative cycle for segment [{start_sample}, {start_sample+SEGMENT_LENGTH}]" #for {os.path.join(path_root.split('\\')[-1], filename)}"
+#     repc_start = math.floor(repcycle[0])
+#     repc_end = math.floor(repcycle[1])
+#     repc_wav = vectorize_f(waveform_np[repc_start:repc_end], vec_size)
+
+#     repcycles_t[segment_num] = torch.tensor(repc_wav)
+
+#   return repcycles_t
 
 
