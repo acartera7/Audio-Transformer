@@ -104,7 +104,7 @@ def fft_max(waveform_arr : np.array, lower_bound:float, upper_bound:float):
   bounded_fft = fft_mag[lower_bound:upper_bound]
 
   max_index = np.argmax(bounded_fft)
-  return lower_bound+max_index # account for index shift due to lower_bound
+  return lower_bound+max_index # account for index shift duse to lower_bound
 
 def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=None):
   last=None 
@@ -124,15 +124,17 @@ def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=No
   #   excluded_samples.extend(range(start_sample + start, start_sample + end))
 
   #sweep the whole segment
-  for index, value in enumerate(waveform_arr):
-    #if absolute_index in excluded_samples:
-    if waveform_arr_mod[index] is np.nan:
+  index = 0
+  while index < len(waveform_arr_mod):
+    if np.isnan(waveform_arr_mod[index]):
+      for ex_i, (start, end) in enumerate(excluded_ranges): 
+        # Skip to the end of the excluded range
+        if start <= index <= end:
+          index = end+1
+          break
       last = None
-
-      # FIND A WAY TO SKIP TO THE NEXT PORTION THAT ISN'T NAN
-
-
       continue 
+    value = waveform_arr_mod[index]
     if last == None:  #record last sample
       last = value
     #elif value == 0:
@@ -147,6 +149,8 @@ def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=No
       inter_x = (index-1) + (-last/(value-last))
       zerocrossings = np.append(zerocrossings,start_sample+inter_x)
     last = value
+    index += 1
+
   return zerocrossings
 
 def find_cycles_f0(f0, start_sample, zero_crossings:list):
