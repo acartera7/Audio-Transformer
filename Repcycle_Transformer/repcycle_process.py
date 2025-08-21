@@ -383,7 +383,7 @@ def process_repcycles_FAST_FFT_NOISE(waveform_t, vec_size):
     # process was borrowed from find_zerocrossings
     last=None 
     start_sample = segment_num*SEGMENT_LENGTH
-
+    repcycle = (None, None)
     # go to the middle of the segment 
     # minus the half the length of the average cycle (100)
     # minus the cycle epsilon
@@ -393,36 +393,31 @@ def process_repcycles_FAST_FFT_NOISE(waveform_t, vec_size):
       value = waveform_np[index]
       if last == None:  #record last sample
         last = value
+        index += 1
         continue
-      #########################################################
-      #########################################################
-      #########################################################
+      
       # if last sample is negative and current one is positive a zero crossing occured
       if np.sign(last) == -1.0 and np.sign(value) == 1.0: 
-        # x = x1 + (x2-x1)/(y2-y1)*(y-y1)
+        # x = x1 + (x2-x1)/(y2-y1)*(y-y1) inverse 
         inter_x = (index-1) + (-last/(value-last))
-        zerocrossings = np.append(zerocrossings,start_sample+inter_x)
+        if repcycle[0] is None:
+          repcycle = (start_sample + inter_x, None)
+          last = None
+              # get frequency to bin index
+          max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+
+          # Get the fundamental frequency using the FFT
+          # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
+          f0 = AUDIO_SIZE/FFT_SIZE * max_index
+          f0_length = 1.0/f0 * AUDIO_SIZE #length of samples of fundamental frequency
+          index += f0_length - CYCLE_EPSILON#jump to next zero crossing
+          continue
+
+        repcycle[1] = start_sample + inter_x
+        break #found the second zero crossing, break out of the loop
       last = value
       index += 1
-    # exclude bins outside the F0_FREQ_RANGE
-    # get frequency to bin index
-    max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
 
-    # Get the fundamental frequency using the FFT
-    # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
-    f0 = AUDIO_SIZE/FFT_SIZE * max_index
-
-    #print(f"silence_threshold: {silence_threshold}")
-    #print(f"f0: {f0}")
-    #print(f"F0 magnitude{fft_mag[max_index]}")
-
-    #find cycles within the signal and find a representative one for the segment
-    cycles = find_cycles_f0(f0, start_sample, zero_crossings)
-    if not len(cycles) > 0:
-      continue
-      
-    repcycle = find_repcycle3(segment_wav, start_sample, f0, cycles)
-    assert repcycle != None, f"Error: failed to find a representative cycle for segment [{start_sample}, {start_sample+SEGMENT_LENGTH}]" #for {os.path.join(path_root.split('\\')[-1], filename)}"
 
     repc_start = math.floor(repcycle[0])
     repc_end = math.floor(repcycle[1])

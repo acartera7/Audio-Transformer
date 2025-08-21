@@ -101,7 +101,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles(waveform, self.vec_size)
+    repcycles_t = process_repcycles_FAST_FFT_NOISE(waveform, self.vec_size)
     return repcycles_t, token
     
   def getbyname(self, item_name):
@@ -110,7 +110,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles_FAST_FFT_USEALL(waveform, self.vec_size)
+    repcycles_t = process_repcycles(waveform, self.vec_size)
     return repcycles_t, token
 
   def plot_item(self, item_name, out_path=None,):
