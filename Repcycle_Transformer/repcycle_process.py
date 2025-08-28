@@ -104,7 +104,7 @@ def fft_max(waveform_arr : np.array, lower_bound:float, upper_bound:float):
   bounded_fft = fft_mag[lower_bound:upper_bound]
 
   max_index = np.argmax(bounded_fft)
-  return lower_bound+max_index # account for index shift duse to lower_bound
+  return lower_bound+max_index, fft_mag # account for index shift duse to lower_bound
 
 # def find_zerocrossings(waveform_arr:np.array, start_sample, dynamic_threshold=0.01):
 #   last=None 
@@ -367,7 +367,7 @@ def process_repcycles(waveform_t, vec_size):
 # uses FFT to guess fundamental frequency
 # uses all segments regardless of volume level
 
-def process_repcycles_FAST_FFT_NOISE(waveform_t, vec_size):
+def process_repcycles_FAST_FFT_NOISY(waveform_t, vec_size):
 
   waveform_np = waveform_t.t().squeeze(1).numpy()
 
@@ -383,14 +383,13 @@ def process_repcycles_FAST_FFT_NOISE(waveform_t, vec_size):
     # process was borrowed from find_zerocrossings
     last=None 
     start_sample = segment_num*SEGMENT_LENGTH
-    repcycle = (None, None)
+    repcycle = (None, None) #(start, end)
     # go to the middle of the segment 
     # minus the half the length of the average cycle (100)
     # minus the cycle epsilon
     index = (SEGMENT_LENGTH //2 - 50 - CYCLE_EPSILON)
-
-    while index < len(waveform_np):
-      value = waveform_np[index]
+    while index < len(segment_wav):
+      value = segment_wav[index]
       if last == None:  #record last sample
         last = value
         index += 1
@@ -404,19 +403,23 @@ def process_repcycles_FAST_FFT_NOISE(waveform_t, vec_size):
           repcycle = (start_sample + inter_x, None)
           last = None
               # get frequency to bin index
-          max_index = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+          max_index, _ = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
 
           # Get the fundamental frequency using the FFT
           # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
           f0 = AUDIO_SIZE/FFT_SIZE * max_index
           f0_length = 1.0/f0 * AUDIO_SIZE #length of samples of fundamental frequency
-          index += f0_length - CYCLE_EPSILON#jump to next zero crossing
+          index += f0_length.__trunc__() - CYCLE_EPSILON#jump to next zero crossing
           continue
 
-        repcycle[1] = start_sample + inter_x
+        repcycle = (repcycle[0], start_sample + inter_x)
         break #found the second zero crossing, break out of the loop
       last = value
       index += 1
+
+    if repcycle[0] is None or repcycle[1] is None:
+      repcycle = None
+      continue
 
 
     repc_start = math.floor(repcycle[0])
