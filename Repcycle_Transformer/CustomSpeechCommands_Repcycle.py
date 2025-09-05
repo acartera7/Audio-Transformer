@@ -13,7 +13,7 @@ import torch.nn.functional as nnF
 
 from collections import defaultdict
 
-from repcycle_process import process_repcycles, process_repcycles_FAST_FFT_NOISY
+from repcycle_process import process_repcycles_FAST_FFT_NOISY_GBS
 
 
 # Install soundfile and ffmpeg-python if not already installed
@@ -101,7 +101,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles_FAST_FFT_NOISY(waveform, self.vec_size)
+    repcycles_t = process_repcycles_FAST_FFT_NOISY_GBS(waveform, self.vec_size)
     return repcycles_t, token
     
   def getbyname(self, item_name):
@@ -110,7 +110,7 @@ class CustomSpeechCommandsDataset_Repcycle(Dataset):
     token = self.label_dict[label]  # Convert the label to an integer token
     waveform, _ = torchaudio.load(audio_path)
     
-    repcycles_t = process_repcycles(waveform, self.vec_size)
+    repcycles_t = process_repcycles_FAST_FFT_NOISY_GBS(waveform, self.vec_size)
     return repcycles_t, token
 
   def plot_item(self, item_name, out_path=None,):

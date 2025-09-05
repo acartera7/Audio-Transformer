@@ -40,7 +40,7 @@ def resize_spectrogram(spectrogram, target_size=(224, 224)):
   return resized_spectrogram.squeeze(0)
 
 class CustomSpeechCommandsDataset(Dataset):
-  def __init__(self, base_dir: str, subset: str = None, shuffle: bool = False, out_size=(224, 224), divisor: int = 1):
+  def __init__(self, base_dir: str, subset: str = None, shuffle: bool = False, out_size=(224, 224)):
     
     self.out_size=out_size    
     self.base_dir = Path(base_dir)
@@ -71,8 +71,8 @@ class CustomSpeechCommandsDataset(Dataset):
     #print(f"Label Dictionary: {self.label_dict}")
 
     # Balance the dataset 
-    self.divisor = divisor
-    self.balance_dataset()
+    # self.divisor = divisor
+    # self.balance_dataset()
     
     # (L - n_fft) / hop_size = # of hops
     # STFT

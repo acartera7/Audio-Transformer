@@ -434,25 +434,11 @@ def process_repcycles_FAST_FFT_NOISY(waveform_t, vec_size):
 #=======================================================================================================================
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #=======================================================================================================================
-# extracting repcycles from audio using the simplest method:
-# 1) jump in the middle of the file 
-# 2) Find zero crossings going left and jump by F0 to next zero crossing
-# uses FFT to guess fundamental frequency
-# uses volume thresholding to ignore quiet segments
+# same as above just but the zero_crossing finding uses a different method
+# "Grow on both sides"
+def process_repcycles_FAST_FFT_NOISY_GBS(waveform_t, vec_size):
 
-def process_repcycles_FAST_FFT_DENOISED(waveform_t, vec_size, quick:bool=False):
-  
   waveform_np = waveform_t.t().squeeze(1).numpy()
-
-  #identify SNR reciprocal to get a dynamic noise threshold for filtering 
-  rms_values, _ = rms_over_windows(waveform_np, SEGMENT_LENGTH) #calculate RMS over time
-  
-  # Get Noise-to-Signal Ratio
-  signal_rms = np.max(rms_values)
-  noise_rms = np.mean(rms_values) * NOISE_FACTOR
-
-  # Calculate dynamic silence threshold based on NSR
-  silence_threshold = min(noise_rms, signal_rms*.50)
 
   # Split the waveform into segments
   split_waveform = np.array_split(waveform_np, np.arange(SEGMENT_LENGTH, AUDIO_SIZE, SEGMENT_LENGTH))
@@ -464,43 +450,38 @@ def process_repcycles_FAST_FFT_DENOISED(waveform_t, vec_size, quick:bool=False):
 
     #sweep the middle portion of the segment trying to find the first zero crossing
     # process was borrowed from find_zerocrossings
-    last=None 
     start_sample = segment_num*SEGMENT_LENGTH
     repcycle = (None, None) #(start, end)
     # go to the middle of the segment 
     # minus the half the length of the average cycle (100)
-    # minus the cycle epsilon
-    index = (SEGMENT_LENGTH //2 - 50 - CYCLE_EPSILON)
-    while index < len(segment_wav):
-      value = segment_wav[index]
-      if last == None:  #record last sample
-        last = value
-        index += 1
-        continue
-      
+    index = (SEGMENT_LENGTH //2 - 50)
+    offset_index = 0
+    exit = False  
+    while 1 < index+-offset_index and index+offset_index < len(segment_wav) and not exit:
       # if last sample is negative and current one is positive a zero crossing occured
-      if np.sign(last) == -1.0 and np.sign(value) == 1.0: 
-        # x = x1 + (x2-x1)/(y2-y1)*(y-y1) inverse 
-        inter_x = (index-1) + (-last/(value-last))
-        if repcycle[0] is None:
-          repcycle = (start_sample + inter_x, None)
-          last = None
-              # get frequency to bin index
-          max_index, _ = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+      for sign in [1, -1]:
+        last = segment_wav[index-1 + sign*offset_index]
+        value = segment_wav[index + sign*offset_index]
+        if np.sign(last) == -1.0 and np.sign(value) == 1.0: 
+          # x = x1 + (x2-x1)/(y2-y1)*(y-y1)
+          inter_x = (index-1 + sign*offset_index) + (-last/(value-last))
+          if repcycle[0] is None:
+            repcycle = (start_sample + inter_x, None)
+            # Get the fundamental frequency using the FFT
+            max_index, _ = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+            # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
+            f0 = AUDIO_SIZE/FFT_SIZE * max_index
+            f0_length = 1.0/f0 * AUDIO_SIZE #length of samples of fundamental frequency
+            index += (offset_index+f0_length.__trunc__()) #jump to next zero crossing
+            offset_index = 0
+            break
 
-          # Get the fundamental frequency using the FFT
-          # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
-          f0 = AUDIO_SIZE/FFT_SIZE * max_index
-          f0_length = 1.0/f0 * AUDIO_SIZE #length of samples of fundamental frequency
-          index += f0_length.__trunc__() - CYCLE_EPSILON#jump to next zero crossing
-          continue
+          repcycle = (repcycle[0], start_sample + inter_x)
+          exit = True
+          break #found the second zero crossing, break out of the loop
+      offset_index += 1
 
-        repcycle = (repcycle[0], start_sample + inter_x)
-        break #found the second zero crossing, break out of the loop
-      last = value
-      index += 1
-
-    if repcycle[0] is None or repcycle[1] is None:
+    if (repcycle[0] is None or repcycle[1] is None) or (repcycle[0] == repcycle[1]):
       repcycle = None
       continue
 
@@ -512,4 +493,86 @@ def process_repcycles_FAST_FFT_DENOISED(waveform_t, vec_size, quick:bool=False):
     repcycles_t[segment_num] = torch.tensor(repc_wav)
 
   return repcycles_t
+
+#=======================================================================================================================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#=======================================================================================================================
+# extracting repcycles from audio using the simplest method:
+# 1) jump in the middle of the file 
+# 2) Find zero crossings going left and jump by F0 to next zero crossing
+# uses FFT to guess fundamental frequency
+# uses volume thresholding to ignore quiet segments
+
+# def process_repcycles_FAST_FFT_DENOISED(waveform_t, vec_size, quick:bool=False):
+  
+#   waveform_np = waveform_t.t().squeeze(1).numpy()
+
+#   #identify SNR reciprocal to get a dynamic noise threshold for filtering 
+#   rms_values, _ = rms_over_windows(waveform_np, SEGMENT_LENGTH) #calculate RMS over time
+  
+#   # Get Noise-to-Signal Ratio
+#   signal_rms = np.max(rms_values)
+#   noise_rms = np.mean(rms_values) * NOISE_FACTOR
+
+#   # Calculate dynamic silence threshold based on NSR
+#   silence_threshold = min(noise_rms, signal_rms*.50)
+
+#   # Split the waveform into segments
+#   split_waveform = np.array_split(waveform_np, np.arange(SEGMENT_LENGTH, AUDIO_SIZE, SEGMENT_LENGTH))
+#   #split_waveform = [waveform_np[i:i+segment_length] for i in range(0, 16000, segment_length)]
+  
+#   repcycles_t = torch.zeros(N_SEGMENTS, vec_size)
+
+#   for segment_num, segment_wav in enumerate(split_waveform):
+
+#     #sweep the middle portion of the segment trying to find the first zero crossing
+#     # process was borrowed from find_zerocrossings
+#     last=None 
+#     start_sample = segment_num*SEGMENT_LENGTH
+#     repcycle = (None, None) #(start, end)
+#     # go to the middle of the segment 
+#     # minus the half the length of the average cycle (100)
+#     # minus the cycle epsilon
+#     index = (SEGMENT_LENGTH //2 - 50 - CYCLE_EPSILON)
+#     while index < len(segment_wav):
+#       value = segment_wav[index]
+#       if last == None:  #record last sample
+#         last = value
+#         index += 1
+#         continue
+      
+#       # if last sample is negative and current one is positive a zero crossing occured
+#       if np.sign(last) == -1.0 and np.sign(value) == 1.0: 
+#         # x = x1 + (x2-x1)/(y2-y1)*(y-y1) inverse 
+#         inter_x = (index-1) + (-last/(value-last))
+#         if repcycle[0] is None:
+#           repcycle = (start_sample + inter_x, None)
+#           last = None
+#               # get frequency to bin index
+#           max_index, _ = fft_max(segment_wav, LOW_F0_INDEX, HIGH_F0_INDEX)
+
+#           # Get the fundamental frequency using the FFT
+#           # Fundamental Frequency: Sample Rate / fftsize * fft_bin_index
+#           f0 = AUDIO_SIZE/FFT_SIZE * max_index
+#           f0_length = 1.0/f0 * AUDIO_SIZE #length of samples of fundamental frequency
+#           index += f0_length.__trunc__() - CYCLE_EPSILON#jump to next zero crossing
+#           continue
+
+#         repcycle = (repcycle[0], start_sample + inter_x)
+#         break #found the second zero crossing, break out of the loop
+#       last = value
+#       index += 1
+
+#     if repcycle[0] is None or repcycle[1] is None:
+#       repcycle = None
+#       continue
+
+
+#     repc_start = math.floor(repcycle[0])
+#     repc_end = math.floor(repcycle[1])
+#     repc_wav = vectorize_f(waveform_np[repc_start:repc_end], vec_size)
+
+#     repcycles_t[segment_num] = torch.tensor(repc_wav)
+
+#   return repcycles_t
 
