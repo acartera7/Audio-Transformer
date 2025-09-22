@@ -178,6 +178,8 @@ custom_speech_commands
 datasets/mini
 datasets/mini2
 
-#Microsoft Temporary Files
+#Temporary Files
 ~$*
 ~*
+.~lock.*
+

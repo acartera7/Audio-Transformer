@@ -1,0 +1,155 @@
+Epoch 1/50 loss: 2.19, LR: 0.0006252467013386903, Epoch time: 307.89 seconds, Avg batch time: 0.239 seconds
+Epoch 2/50 loss: 2.01, LR: 0.0006016155547027326, Epoch time: 249.74 seconds, Avg batch time: 0.229 seconds
+Epoch 3/50 loss: 1.90, LR: 0.0005870692389756511, Epoch time: 250.32 seconds, Avg batch time: 0.229 seconds
+Epoch 4/50 loss: 1.85, LR: 0.0005803111129983918, Epoch time: 250.44 seconds, Avg batch time: 0.229 seconds
+Epoch 5/50 loss: 1.83, LR: 0.000577276762230874, Epoch time: 250.41 seconds, Avg batch time: 0.229 seconds
+Epoch 6/50 loss: 1.80, LR: 0.0005738539359323442, Epoch time: 250.48 seconds, Avg batch time: 0.230 seconds
+Epoch 7/50 loss: 1.79, LR: 0.000571339391921008, Epoch time: 250.47 seconds, Avg batch time: 0.229 seconds
+Epoch 8/50 loss: 1.77, LR: 0.0005691594616092042, Epoch time: 250.51 seconds, Avg batch time: 0.230 seconds
+Epoch 9/50 loss: 1.76, LR: 0.0005676740628732625, Epoch time: 250.42 seconds, Avg batch time: 0.229 seconds
+Epoch 10/50 loss: 1.74, LR: 0.0005653002682601604, Epoch time: 250.52 seconds, Avg batch time: 0.230 seconds
+Epoch 11/50 loss: 1.73, LR: 0.0005639809420114209, Epoch time: 250.60 seconds, Avg batch time: 0.230 seconds
+Epoch 12/50 loss: 1.73, LR: 0.0005634365621346648, Epoch time: 250.53 seconds, Avg batch time: 0.230 seconds
+Epoch 13/50 loss: 1.72, LR: 0.000562270208056064, Epoch time: 250.40 seconds, Avg batch time: 0.229 seconds
+Epoch 14/50 loss: 1.71, LR: 0.0005609334867468702, Epoch time: 250.50 seconds, Avg batch time: 0.230 seconds
+Epoch 15/50 loss: 1.70, LR: 0.0005601161089479953, Epoch time: 250.46 seconds, Avg batch time: 0.229 seconds
+Epoch 16/50 loss: 1.69, LR: 0.0005586683204678429, Epoch time: 250.54 seconds, Avg batch time: 0.230 seconds
+Epoch 17/50 loss: 1.69, LR: 0.0005580202512126426, Epoch time: 250.42 seconds, Avg batch time: 0.229 seconds
+Epoch 18/50 loss: 1.68, LR: 0.0005570450893386132, Epoch time: 250.37 seconds, Avg batch time: 0.229 seconds
+Epoch 19/50 loss: 1.67, LR: 0.0005560491997845133, Epoch time: 250.49 seconds, Avg batch time: 0.230 seconds
+Epoch 20/50 loss: 1.67, LR: 0.0005560835059350938, Epoch time: 250.55 seconds, Avg batch time: 0.230 seconds
+Epoch 21/50 loss: 1.66, LR: 0.0005552174204995737, Epoch time: 250.44 seconds, Avg batch time: 0.229 seconds
+Epoch 22/50 loss: 1.66, LR: 0.0005550910806696532, Epoch time: 250.41 seconds, Avg batch time: 0.229 seconds
+Epoch 23/50 loss: 1.66, LR: 0.000554424760834065, Epoch time: 250.45 seconds, Avg batch time: 0.229 seconds
+Epoch 24/50 loss: 1.66, LR: 0.0005540728603440608, Epoch time: 250.47 seconds, Avg batch time: 0.230 seconds
+Epoch 25/50 loss: 1.65, LR: 0.0005532052797801801, Epoch time: 250.46 seconds, Avg batch time: 0.229 seconds
+Epoch 26/50 loss: 1.64, LR: 0.0005523974768886149, Epoch time: 250.41 seconds, Avg batch time: 0.229 seconds
+Epoch 27/50 loss: 1.64, LR: 0.0005519579997360971, Epoch time: 250.45 seconds, Avg batch time: 0.229 seconds
+Epoch 28/50 loss: 1.64, LR: 0.0005517395030785015, Epoch time: 250.36 seconds, Avg batch time: 0.229 seconds
+Epoch 29/50 loss: 1.64, LR: 0.0005517056041534217, Epoch time: 250.58 seconds, Avg batch time: 0.230 seconds
+Epoch 30/50 loss: 1.63, LR: 0.0005512972316016843, Epoch time: 250.46 seconds, Avg batch time: 0.229 seconds
+Epoch 31/50 loss: 1.63, LR: 0.0005504401320923714, Epoch time: 250.49 seconds, Avg batch time: 0.229 seconds
+Epoch 32/50 loss: 1.63, LR: 0.0005502543066033969, Epoch time: 250.42 seconds, Avg batch time: 0.229 seconds
+Epoch 33/50 loss: 1.62, LR: 0.0005496425660925337, Epoch time: 250.35 seconds, Avg batch time: 0.229 seconds
+Epoch 34/50 loss: 1.62, LR: 0.0005492672968978138, Epoch time: 250.34 seconds, Avg batch time: 0.229 seconds
+Epoch 35/50 loss: 1.62, LR: 0.0005493946553103288, Epoch time: 250.29 seconds, Avg batch time: 0.229 seconds
+Epoch 36/50 loss: 1.62, LR: 0.0005490731610007979, Epoch time: 250.26 seconds, Avg batch time: 0.229 seconds
+Epoch 37/50 loss: 1.61, LR: 0.0005486318903636274, Epoch time: 250.34 seconds, Avg batch time: 0.229 seconds
+Epoch 38/50 loss: 1.61, LR: 0.0005485541672340902, Epoch time: 250.13 seconds, Avg batch time: 0.229 seconds
+Epoch 39/50 loss: 1.61, LR: 0.0005481049408139922, Epoch time: 250.25 seconds, Avg batch time: 0.229 seconds
+Epoch 40/50 loss: 1.61, LR: 0.0005480378871153455, Epoch time: 250.23 seconds, Avg batch time: 0.229 seconds
+Epoch 41/50 loss: 1.61, LR: 0.0005481632428254978, Epoch time: 250.37 seconds, Avg batch time: 0.229 seconds
+Epoch 42/50 loss: 1.61, LR: 0.0005477664465095965, Epoch time: 250.22 seconds, Avg batch time: 0.229 seconds
+Epoch 43/50 loss: 1.61, LR: 0.000547600645968879, Epoch time: 250.32 seconds, Avg batch time: 0.229 seconds
+Epoch 44/50 loss: 1.61, LR: 0.0005475177396770254, Epoch time: 250.27 seconds, Avg batch time: 0.229 seconds
+Epoch 45/50 loss: 1.60, LR: 0.0005469546500955273, Epoch time: 250.29 seconds, Avg batch time: 0.229 seconds
+Epoch 46/50 loss: 1.60, LR: 0.0005469132342843291, Epoch time: 250.19 seconds, Avg batch time: 0.229 seconds
+Epoch 47/50 loss: 1.60, LR: 0.0005469071793937352, Epoch time: 250.16 seconds, Avg batch time: 0.229 seconds
+Epoch 48/50 loss: 1.60, LR: 0.0005467486608569976, Epoch time: 250.17 seconds, Avg batch time: 0.229 seconds
+Epoch 49/50 loss: 1.60, LR: 0.0005461313899832653, Epoch time: 250.16 seconds, Avg batch time: 0.229 seconds
+Epoch 50/50 loss: 1.59, LR: 0.0005457494496155092, Epoch time: 250.19 seconds, Avg batch time: 0.229 seconds
+Total training time: 12575.99 seconds
+
+Per-epoch times (seconds):
+Epoch 1: 307.89
+Epoch 2: 249.74
+Epoch 3: 250.32
+Epoch 4: 250.44
+Epoch 5: 250.41
+Epoch 6: 250.48
+Epoch 7: 250.47
+Epoch 8: 250.51
+Epoch 9: 250.42
+Epoch 10: 250.52
+Epoch 11: 250.60
+Epoch 12: 250.53
+Epoch 13: 250.40
+Epoch 14: 250.50
+Epoch 15: 250.46
+Epoch 16: 250.54
+Epoch 17: 250.42
+Epoch 18: 250.37
+Epoch 19: 250.49
+Epoch 20: 250.55
+Epoch 21: 250.44
+Epoch 22: 250.41
+Epoch 23: 250.45
+Epoch 24: 250.47
+Epoch 25: 250.46
+Epoch 26: 250.41
+Epoch 27: 250.45
+Epoch 28: 250.36
+Epoch 29: 250.58
+Epoch 30: 250.46
+Epoch 31: 250.49
+Epoch 32: 250.42
+Epoch 33: 250.35
+Epoch 34: 250.34
+Epoch 35: 250.29
+Epoch 36: 250.26
+Epoch 37: 250.34
+Epoch 38: 250.13
+Epoch 39: 250.25
+Epoch 40: 250.23
+Epoch 41: 250.37
+Epoch 42: 250.22
+Epoch 43: 250.32
+Epoch 44: 250.27
+Epoch 45: 250.29
+Epoch 46: 250.19
+Epoch 47: 250.16
+Epoch 48: 250.17
+Epoch 49: 250.16
+Epoch 50: 250.19
+
+Average batch times per epoch (seconds):
+Epoch 1: 0.239
+Epoch 2: 0.229
+Epoch 3: 0.229
+Epoch 4: 0.229
+Epoch 5: 0.229
+Epoch 6: 0.230
+Epoch 7: 0.229
+Epoch 8: 0.230
+Epoch 9: 0.229
+Epoch 10: 0.230
+Epoch 11: 0.230
+Epoch 12: 0.230
+Epoch 13: 0.229
+Epoch 14: 0.230
+Epoch 15: 0.229
+Epoch 16: 0.230
+Epoch 17: 0.229
+Epoch 18: 0.229
+Epoch 19: 0.230
+Epoch 20: 0.230
+Epoch 21: 0.229
+Epoch 22: 0.229
+Epoch 23: 0.229
+Epoch 24: 0.230
+Epoch 25: 0.229
+Epoch 26: 0.229
+Epoch 27: 0.229
+Epoch 28: 0.229
+Epoch 29: 0.230
+Epoch 30: 0.229
+Epoch 31: 0.229
+Epoch 32: 0.229
+Epoch 33: 0.229
+Epoch 34: 0.229
+Epoch 35: 0.229
+Epoch 36: 0.229
+Epoch 37: 0.229
+Epoch 38: 0.229
+Epoch 39: 0.229
+Epoch 40: 0.229
+Epoch 41: 0.229
+Epoch 42: 0.229
+Epoch 43: 0.229
+Epoch 44: 0.229
+Epoch 45: 0.229
+Epoch 46: 0.229
+Epoch 47: 0.229
+Epoch 48: 0.229
+Epoch 49: 0.229
+Epoch 50: 0.229
